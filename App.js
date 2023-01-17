@@ -21,13 +21,13 @@ export default function App() {
   const [user, setUser] = useState("");
   const [errors, setErrors] = useState([]);
   const [fakeUser, setFakeUser] = useState(null);
-  const jakeAlarms = user.alarms;
+  const jakeAlarms = user?.alarms;
 
   //this is a component
 
   useEffect(() => {
     //auto-login
-    fetch("http://localhost:3000/jake").then((r) => {
+    fetch(`${HOST_WITH_PORT}/jake`).then((r) => {
       if (r.ok) {
         r.json().then((jake) => {
           setUser(jake);
@@ -51,6 +51,8 @@ export default function App() {
                     styles={styles}
                     title={item.name}
                     time={item.just_time}
+                    alarmTime={item.alarm_time}
+                    alarmId={item.id}
                 
                   />
                
@@ -61,7 +63,7 @@ export default function App() {
           <Button title="Log Out" onPress={() => setUser(null)}></Button>
         </>
       ) : (
-        <LoginPage onLogin={setFakeUser} styles={styles} />
+        <LoginPage onLogin={setFakeUser} styles={styles} user={user}/>
       )}
     </SafeAreaView>
   );

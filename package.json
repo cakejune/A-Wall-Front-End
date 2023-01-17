@@ -1,6 +1,6 @@
 {
   "name": "awallexpo",
-  "proxy": "http://localhost:3000",
+  "proxy": "d233-71-190-177-64.ngrok.io",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {

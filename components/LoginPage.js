@@ -9,6 +9,7 @@ import {
   Button
 } from "react-native";
 import { useState, useEffect } from "react";
+import { HOST_WITH_PORT } from "../environment";
 
 export default function LoginPage({onLogin, styles}){
 
@@ -17,7 +18,7 @@ export default function LoginPage({onLogin, styles}){
   const [errors, setErrors] = useState([]);
 
   function onSubmit(e){
-    fetch(`http://localhost:3000/login`, {
+    fetch(`http://d233-71-190-177-64.ngrok.io/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -38,6 +39,11 @@ export default function LoginPage({onLogin, styles}){
       {res.json().then((err)=>{alert(`${err.errors}`)})
     }
     })
+  }
+
+  function showAlarmsTest()
+  {
+    fetch(`${HOST_WITH_PORT}/alarms`).then((res)=>res.json()).then((alarms)=>(alert(`${alarms[0].just_time}`)))
   }
 
 useEffect(()=>{
@@ -77,3 +83,4 @@ return (
       </View>
       )
     }
+
