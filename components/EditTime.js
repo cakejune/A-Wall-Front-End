@@ -1,13 +1,23 @@
 import React from "react";
 import { Alert, Modal, Text, Pressable, View, Button } from "react-native";
-import { useState } from 'react';
+import { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { HOST_WITH_PORT } from "../environment";
+import { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
+import {RNDateTimePicker} from "@react-native-community/datetimepicker";
 
-export default function EditTime({alarmTime, submitTime, styles, time, title, handleClose, show }) {
+export default function EditTime({
+  alarmTime,
+  submitTime,
+  styles,
+  time,
+  title,
+  handleClose,
+  show,
+}) {
   const [date, setDate] = useState(new Date(alarmTime));
-  const [mode, setMode] = useState("date");
-//   const [show, setShow] = useState(false);
+  const [mode, setMode] = useState("time");
+  //   const [show, setShow] = useState(false);
 
   const onChange = (event, selectedDate) => {
     const currentDate = selectedDate;
@@ -30,11 +40,10 @@ export default function EditTime({alarmTime, submitTime, styles, time, title, ha
     showMode("time");
   };
 
-
-  function handleSubmitTime(){
+  function handleSubmitTime() {
     // console.log(alarmTime)
-    // console.log(alarmTime.toString().split("").splice(11,15))  
-    submitTime(date.toTimeString().split("").splice(0,5).join(""));
+    // console.log(alarmTime.toString().split("").splice(11,15))
+    submitTime(date.toTimeString().split("").splice(0, 5).join(""));
     handleClose();
   }
 
@@ -46,6 +55,17 @@ export default function EditTime({alarmTime, submitTime, styles, time, title, ha
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Button title="confirm" onPress={handleSubmitTime}></Button>
+            {/* {Platform.OS === "android" ? (
+              <RNDateTimePicker
+                testID="dateTimePickerAndroid"
+                value={date}
+                mode="time"
+                is24Hour={true}
+                onChange={onChange}
+                display="spinner"
+                neutralButton={{ label: "Clear", textColor: "grey" }}
+              />
+            ) : (
               <DateTimePicker
                 testID="dateTimePicker"
                 value={date}
@@ -53,8 +73,18 @@ export default function EditTime({alarmTime, submitTime, styles, time, title, ha
                 is24Hour={true}
                 onChange={onChange}
                 display="spinner"
-                neutralButton={{label: 'Clear', textColor: 'grey'}}
-                
+                neutralButton={{ label: "Clear", textColor: "grey" }}
+              />
+              
+            )} */}
+            <DateTimePicker
+                testID="dateTimePicker"
+                value={date}
+                mode="time"
+                is24Hour={true}
+                onChange={onChange}
+                display="spinner"
+                neutralButton={{ label: "Clear", textColor: "grey" }}
               />
             <Button title="cancel" onPress={handleClose}></Button>
           </View>

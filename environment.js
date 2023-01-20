@@ -1,5 +1,7 @@
 // environment.js
-const HOST = 'd233-71-190-177-64.ngrok.io'
+const HOST = 'ba5b-70-107-111-224.ngrok.io'
+const A_WALL_USER_2_ACCESS_KEY_ID = 'AKIAVF2C3PGAGL23IXPH'
+const A_WALL_2_SECRET_ACCESS_KEY = '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'
 
 // make sure to export the variable so you can import it in other files
-export const HOST_WITH_PORT = `http://${HOST}`;
+export const HOST_WITH_PORT = `https://${HOST}`;
