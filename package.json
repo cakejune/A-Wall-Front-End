@@ -1,6 +1,6 @@
 {
   "name": "awallexpo",
-  "proxy": "ba5b-70-107-111-224.ngrok.io",
+  "proxy": "b1eb-70-107-111-224.ngrok.io",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {

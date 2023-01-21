@@ -29,6 +29,8 @@ export default function RecorderModal({
   const [recordings, setRecordings] = useState([]);
   const [message, setMessage] = useState("");
   const [sound, setSound] = useState();
+  const [soundObject, setSoundObject] = useState();
+  const [soundStatus, setSoundStatus] = useState();
 
   useEffect(() => {
     return sound
@@ -74,33 +76,28 @@ export default function RecorderModal({
   }
 
   async function handleSubmitRecording(recording) {
-    console.log(recording.getURI())
-    // const fileName = `${recording.file}`;
-    // const file = await fetch(recording.file);
-    // const blob = await file.blob();
-    // const data = new FormData();
-    // data.append("file", blob, "audio_message.mp4");
-    // data.append("filename", fileName);
-    // data.append("duration", recording.duration);
-    // data.append("io", recording.file);
-    // // model.attachment_changes['attachment_name'].attachable
+    console.log(recording);
+    const file = await fetch(recording.file, { method: "GET" });
+    const blob = await file.blob();
+    const data = new FormData();
+    data.append("file", blob);
 
-    // try {
-    //   const response = await fetch(
-    //     `${HOST_WITH_PORT}/alarms/${alarmId}/add_audio_message`,
-    //     {
-    //       method: "PATCH",
-    //       body: data,
-    //     }
-    //   );
-    //   const json = await response.json();
-    //   if (!response.ok) {
-    //     throw new Error(json.error);
-    //   }
-    //   // Handle successful response
-    // } catch (error) {
-    //   // Handle error
-    // }
+    try {
+      const response = await fetch(
+        `${HOST_WITH_PORT}/alarms/${alarmId}/add_audio_message`,
+        {
+          method: "PATCH",
+          body: data,
+        }
+      );
+      const json = await response.json();
+      if (!response.ok) {
+        throw new Error(json.error);
+      }
+      // Handle successful response
+    } catch (error) {
+      // Handle error
+    }
   }
 
   async function stopRecording() {
@@ -112,12 +109,15 @@ export default function RecorderModal({
     });
     let updatedRecordings = [...recordings];
     const { sound, status } = await recording.createNewLoadedSoundAsync();
+    setSoundObject(sound);
+    setSoundStatus(status);
     updatedRecordings.push({
       sound: sound,
       duration: getDurationFormatted(status.durationMillis),
       file: recording.getURI(),
     });
 
+    setFiles(updatedFiles)
     setRecordings(updatedRecordings);
   }
 
@@ -127,6 +127,16 @@ export default function RecorderModal({
     const seconds = Math.round((minutes - minutesDisplay) * 60);
     const secondsDisplay = seconds < 10 ? `0${seconds}` : seconds;
     return `${minutesDisplay}:${secondsDisplay}`;
+  }
+
+  function getFileLines(){
+    return files.map((fileLine, index) => {
+      return (
+        <View key={index} style={style.row}>
+          
+        </View>
+      )
+    })
   }
 
   function getRecordingLines() {
