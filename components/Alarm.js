@@ -4,6 +4,7 @@ import EditTime from "./EditTime";
 import { HOST_WITH_PORT } from "../environment";
 import { Text, View, Pressable, Button } from "react-native";
 import RecorderModal from "./RecorderModal";
+import Appstyles from '../App.scss';
 
 export default function Alarm({ playTestSound, alarmTime, alarmId, title, time, styles }) {
   const [show, setShow] = useState(false);
@@ -80,7 +81,7 @@ if(minutesTilAlarm){
 
   return (
     <>
-      <View style={styles.alarm}>
+      <View style={Appstyles.container}>
         <Pressable style={[styles.buttonOpen]} onPress={() => setShow(true)}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.textStyle}>

@@ -52,7 +52,7 @@ setPassword("")
 }, [])
 
 return (
-    <View style={styles.container}>
+    <View>
     <Text>Login</Text>
     <SafeAreaView>
         <TextInput

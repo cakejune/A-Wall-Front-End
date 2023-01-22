@@ -6,8 +6,7 @@ import {
   Button,
   FlatList,
   Dimensions,
-  TouchableOpacity,
-  Pressable,
+  View
 } from "react-native";
 import LoginScreen from "react-native-login-screen";
 import { useState, useEffect } from "react";
@@ -15,6 +14,7 @@ import { HOST_WITH_PORT } from "./environment";
 import LoginPage from "./components/LoginPage";
 import Alarm from "./components/Alarm";
 import { Audio } from "expo-av";
+import Appstyles from './App.scss'
 
 const screen = Dimensions.get("window");
 
@@ -30,7 +30,7 @@ export default function App() {
 
   useEffect(() => {
     //auto-login
-    fetch(`${HOST_WITH_PORT}/jake`).then((r) => {
+    fetch(`${HOST_WITH_PORT}/jake`, {mode: 'no-cors'}).then((r) => {
       if (r.ok) {
         r.json().then((jake) => {
           setUser(jake);
@@ -58,10 +58,11 @@ export default function App() {
   }
 
   return (
-    <SafeAreaView styles={styles} backgroundColor={'#37004b'} height={screen.height}>
+    <SafeAreaView styles={styles} height={screen.height}>
       {user ? (
         <>
           <Text style={styles.title}>Welcome, {user.username}</Text>
+          
           <FlatList
             data={jakeAlarms}
             renderItem={({ item, index }) => {
@@ -75,6 +76,7 @@ export default function App() {
                   alarmId={item.id}
                   playTestSound={playTestSound}
                 />
+                
             )}
           }
             keyExtractor={(item) => item.id}
@@ -95,12 +97,6 @@ const styles = StyleSheet.create({
   alarm: {
     backgroundColor: '#470061',
     borderRadius: 20
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
   },
   input: {
     height: 40,
