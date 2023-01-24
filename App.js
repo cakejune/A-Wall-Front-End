@@ -6,15 +6,18 @@ import {
   Button,
   FlatList,
   Dimensions,
-  View
+  View,
+  RefreshControl,
+  ScrollView
 } from "react-native";
 import LoginScreen from "react-native-login-screen";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { HOST_WITH_PORT } from "./environment";
 import LoginPage from "./components/LoginPage";
 import Alarm from "./components/Alarm";
 import { Audio } from "expo-av";
 import Appstyles from './App.scss'
+// import { ScrollView } from "react-native-web";
 
 const screen = Dimensions.get("window");
 
@@ -24,9 +27,21 @@ export default function App() {
   const [fakeUser, setFakeUser] = useState(null);
   const jakeAlarms = user?.alarms;
   const [testSound, setTestSound] = useState();
+  const [refreshing, setRefreshing] = useState(false);
   
 
-  //this is a component
+  function refreshAlarms(){
+    setFakeUser(fakeUser);
+    setRefreshing(true);
+    onRefresh();
+    
+  }
+
+  const onRefresh = useCallback(async () => {
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   useEffect(() => {
     //auto-login
@@ -59,12 +74,16 @@ export default function App() {
 
   return (
     <SafeAreaView styles={styles} height={screen.height}>
+      
       {user ? (
         <>
           <Text style={styles.title}>Welcome, {user.username}</Text>
           
           <FlatList
             data={jakeAlarms}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
             renderItem={({ item, index }) => {
               
               return (
@@ -75,6 +94,8 @@ export default function App() {
                   alarmTime={item.alarm_time}
                   alarmId={item.id}
                   playTestSound={playTestSound}
+                  sounds={item.audio_files}
+                  refreshAlarms={refreshAlarms}
                 />
                 
             )}

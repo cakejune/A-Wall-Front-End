@@ -1,13 +1,12 @@
 import React, { useEffect } from "react";
 import {
   TouchableOpacity,
-  Alert,
   Modal,
   Text,
   View,
   Button,
   Dimensions,
-  StyleSheet,
+  StyleSheet
 } from "react-native";
 import { useState } from "react";
 import { HOST_WITH_PORT } from "../environment";
@@ -23,7 +22,7 @@ export default function RecorderModal({
   title,
   alarmId,
   alarmTime,
-  submitRecording,
+  alertAndClose
 }) {
   const [recording, setRecording] = useState();
   const [recordings, setRecordings] = useState([]);
@@ -40,57 +39,56 @@ export default function RecorderModal({
   //     : undefined;
   // }, [sound]);
 
-  async function startRecordingSingle(){
-      try {
-        const permission = await Audio.requestPermissionsAsync();
-  
-        if (permission.status === "granted") {
-          await Audio.setAudioModeAsync({
-            allowsRecordingIOS: true,
-            shouldDuckAndroid: true,
-            interruptionModeAndroid: (Audio.DoNotMix = 1),
-            interruptionModeIOS: (Audio.DoNotMix = 1),
-            playsInSilentModeIOS: true,
-            output: Audio.AUDIO_OUTPUT_ALARM,
-          });
-  
-          const { recordingSingle } = await Audio.Recording.createAsync({
-            ios: {
-              extension: ".mp4",
-              outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
-            },
-            android: {
-              extension: ".wav",
-              outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG_4,
-            },
-          });
-  
-          setRecordingObject(recordingSingle);
-        } else {
-          setMessage("Please grant permission to app to access microphone");
-        }
-      } catch (err) {
-        console.error("Failed to start recording", err);
+  async function startRecordingSingle() {
+    try {
+      const permission = await Audio.requestPermissionsAsync();
+
+      if (permission.status === "granted") {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          shouldDuckAndroid: true,
+          interruptionModeAndroid: (Audio.DoNotMix = 1),
+          interruptionModeIOS: (Audio.DoNotMix = 1),
+          playsInSilentModeIOS: true,
+          output: Audio.AUDIO_OUTPUT_ALARM,
+        });
+
+        const { recordingSingle } = await Audio.Recording.createAsync({
+          ios: {
+            extension: ".mp4",
+            outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG4AAC,
+          },
+          android: {
+            extension: ".wav",
+            outputFormat: Audio.RECORDING_OPTION_IOS_OUTPUT_FORMAT_MPEG_4,
+          },
+        });
+
+        setRecordingObject(recordingSingle);
+      } else {
+        setMessage("Please grant permission to app to access microphone");
       }
+    } catch (err) {
+      console.error("Failed to start recording", err);
     }
+  }
 
-    async function stopRecordingSingle() {
-      await recordingObject.stopAndUnloadAsync();
-      
-      setRecordingObject(undefined);
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        playsInSilentModeIOS: false,
-      });
-      const { soundObject, statusSingle } = await recording.createNewLoadedSoundAsync();
-      setSound({
-        sound: soundObject,
-        duration: getDurationFormatted(statusSingle.durationMillis),
-        file: recordingObject.getURI(),
-      });
-    }
-  
+  async function stopRecordingSingle() {
+    await recordingObject.stopAndUnloadAsync();
 
+    setRecordingObject(undefined);
+    await Audio.setAudioModeAsync({
+      allowsRecordingIOS: false,
+      playsInSilentModeIOS: false,
+    });
+    const { soundObject, statusSingle } =
+      await recording.createNewLoadedSoundAsync();
+    setSound({
+      sound: soundObject,
+      duration: getDurationFormatted(statusSingle.durationMillis),
+      file: recordingObject.getURI(),
+    });
+  }
 
   async function startRecording() {
     try {
@@ -126,29 +124,39 @@ export default function RecorderModal({
     }
   }
 
-  async function handleSubmitRecording(recording) {
-    console.log(recording);
-    const file = await fetch(recording.file, { method: "GET" });
-    const blob = await file.blob();
-    const data = new FormData();
-    data.append("file", blob);
-
-    try {
-      const response = await fetch(
-        `${HOST_WITH_PORT}/alarms/${alarmId}/add_audio_message`,
-        {
-          method: "PATCH",
-          body: data,
-        }
-      );
-      const json = await response.json();
+  function uploadToAPI(alarm_message) {
+    // console.log(alarm_message)
+    fetch(`${HOST_WITH_PORT}/alarms/${alarmId}/add_audio_message`, {
+      method: "PATCH",
+      headers: {'content-type': 'multipart/form-data'},
+      body: alarm_message,
+    }).then((response) => {
       if (!response.ok) {
-        throw new Error(json.error);
+        throw new Error(response.statusText);
+      } else {
+        response
+          .json()
+          .then((updatedAlarm) => {
+            console.log(updatedAlarm);
+            console.log(alarm_message);
+          })
+          .catch((error) => console.error(error));
       }
-      // Handle successful response
-    } catch (error) {
-      // Handle error
-    }
+    });
+  }
+
+  async function handleSubmitRecording(recording) {
+    //file is the URI of the recording
+    const alarm_messages = new FormData();
+    const file = recording.file;
+    alarm_messages.append("audio_messages", {
+      uri: file,
+      name: `msg-for-${title}.mp4`,
+      type: "audio/mp4",
+      duration: recording.duration
+    });  
+    alertAndClose();
+    uploadToAPI(alarm_messages);
   }
 
   async function stopRecording() {
@@ -160,7 +168,7 @@ export default function RecorderModal({
     });
     let updatedRecordings = [...recordings];
     const { sound, status } = await recording.createNewLoadedSoundAsync();
-  
+
     updatedRecordings.push({
       sound: sound,
       duration: getDurationFormatted(status.durationMillis),
@@ -179,10 +187,10 @@ export default function RecorderModal({
   }
 
   // function getFileLine(){
-   
+
   //     return (
   //       <View key={index} style={style.row}>
-          
+
   //       </View>
   //     )
   // }
@@ -230,7 +238,7 @@ export default function RecorderModal({
               onPress={recording ? stopRecording : startRecording}
             >
               <View>
-                <Text>{recordingObject ? "Stop Recording" : "Start Recording"}</Text>
+                <Text>{recording ? "Stop Recording" : "Start Recording"}</Text>
               </View>
             </TouchableHighlight>
             {getRecordingLines()}
