@@ -33,6 +33,7 @@ export default function Alarm({
   const [newAlarmTime, setNewAlarmTime] = useState(alarmTime);
   const [currentSound, setCurrentSound] = useState();
   const [alarmSounds, setAlarmSounds] = useState(sounds);
+  const [alarmSoundIndex, setAlarmSoundIndex] = useState(null);
 
   function alertAndClose() {
     Alert.alert("Submitted", "Your recording has been submitted", [
@@ -62,7 +63,6 @@ export default function Alarm({
   useEffect(() => {
     if (minutesTilAlarm) {
       const timer = setTimeout(() => {
-        console.log(`This will play after ${minutesTilAlarm} minutes.`);
         playAlarms(alarmSounds);
       }, minutesTilAlarm * 60 * 1000);
       return () => clearTimeout(timer);
@@ -79,6 +79,36 @@ export default function Alarm({
 
     setMinutesTilAlarm(calculateTimeout(timeInMinutes, alarmInMinutes));
   }, [newAlarmTime]);
+
+  async function startAlarmChain(){
+  setAlarmSoundIndex(0)
+  }
+
+  useEffect(()=>{
+    if (alarmSoundIndex !== null && alarmSounds[alarmSoundIndex])
+    {
+      playAlarmOneByOne(alarmSoundIndex)
+    }
+    else{
+      console.log('nothing')
+    }
+  },[alarmSoundIndex])
+  
+  const setNextAlarmTimer = (timer) => {
+    setTimeout(()=> {
+      setAlarmSoundIndex(alarmSoundIndex+1)
+    }, timer*1000)
+    return () => clearTimeout(timer);
+  }
+
+  const playAlarmOneByOne = (soundIndex) => {
+    const currentPlayingAlarm = alarmSounds[soundIndex]
+    currentPlayingAlarm.createAsync({
+      uri: currentPlayingAlarm.url
+    })
+    setNextAlarmTimer(currentPlayingAlarm.duration)
+    
+  }
 
   const calculateTimeout = (currentTime, alarmTime) => {
     let delta = alarmTime - currentTime;
@@ -114,13 +144,35 @@ export default function Alarm({
     });
   }
 
+
+
   async function playAlarms(allSounds) {
-    for (let i = 0; i < allSounds.length; i++) {
+   let i = 0;
+    while (i < allSounds.length) {
       const { sound } = await Audio.Sound.createAsync({
         uri: allSounds[i].url,
       });
+      //initiate a timeout that has a length of allsounds[i].duration, and when
+      //duration is up, play allsounds[i+1], and set the timeout to allsounds[i+1].duration
+      //
       sound.playAsync();
-      setCurrentSound(sound);
+      currentSound.unloadAsync();
+      Alert.alert(`${title}`, "Playing Sounds", [
+        {
+          text: "Stop Sounds",
+          onPress: () => {
+            currentSound.unloadAsync();
+          },
+          style: "cancel",
+        },
+        {
+          text: "Continue Listening",
+          onPress: () => {
+            refreshAlarms();
+          },
+          style: "cancel",
+        },
+      ]);
     }
   }
 
@@ -189,9 +241,18 @@ export default function Alarm({
           </Text>
         </Pressable>
         <Button
-          title="Recordings"
+          title="Record a Message"
           onPress={() => setRecorderVisible(true)}
         ></Button>
+        <Button
+          title="duration"
+          onPress={() => console.log(alarmSounds[0])}
+        ></Button>
+        {/* <Button
+          title="Play All Messages"
+          onPress={() => startAlarmChain}
+        ></Button> */}
+        
         <FlatList
           data={alarmSounds}
           renderItem={({ item, index }) => {
