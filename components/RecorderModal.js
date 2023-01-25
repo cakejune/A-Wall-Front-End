@@ -124,12 +124,12 @@ export default function RecorderModal({
     }
   }
 
-  function uploadToAPI(alarm_message) {
+  function uploadToAPI(alarm_messages, milli) {
     // console.log(alarm_message)
     fetch(`${HOST_WITH_PORT}/alarms/${alarmId}/add_audio_message`, {
       method: "PATCH",
       headers: {'content-type': 'multipart/form-data'},
-      body: alarm_message,
+      body: alarm_messages
     }).then((response) => {
       if (!response.ok) {
         throw new Error(response.statusText);
@@ -138,7 +138,7 @@ export default function RecorderModal({
           .json()
           .then((updatedAlarm) => {
             console.log(updatedAlarm);
-            console.log(alarm_message);
+            console.log(alarm_messages);
           })
           .catch((error) => console.error(error));
       }
@@ -147,6 +147,8 @@ export default function RecorderModal({
 
   async function handleSubmitRecording(recording) {
     //file is the URI of the recording
+    
+    const milli = recording.milli
     const alarm_messages = new FormData();
     const file = recording.file;
     alarm_messages.append("audio_messages", {
@@ -155,6 +157,7 @@ export default function RecorderModal({
       type: "audio/mp4",
       duration: recording.duration
     });  
+    alarm_messages.append("milli", milli);
     alertAndClose();
     uploadToAPI(alarm_messages);
   }
@@ -173,11 +176,13 @@ export default function RecorderModal({
       sound: sound,
       duration: getDurationFormatted(status.durationMillis),
       file: recording.getURI(),
+      milli: status.durationMillis
     });
 
     setRecordings(updatedRecordings);
   }
 
+  //change this to milliseconds so i don't have to parse through it like an string to an integer
   function getDurationFormatted(millis) {
     const minutes = millis / 1000 / 60;
     const minutesDisplay = Math.floor(minutes);
@@ -200,7 +205,7 @@ export default function RecorderModal({
       return (
         <View key={index} style={style.row}>
           <Text style={style.fill}>
-            Recording {index + 1} - {recordingLine.duration}
+            Recording {index + 1} - {recordingLine.duration} - {recordingLine.milli}
           </Text>
           <Button
             style={style.playbackButton}

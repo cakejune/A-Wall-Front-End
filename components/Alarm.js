@@ -97,16 +97,15 @@ export default function Alarm({
   const setNextAlarmTimer = (timer) => {
     setTimeout(()=> {
       setAlarmSoundIndex(alarmSoundIndex+1)
-    }, timer*1000)
+    }, timer)
     return () => clearTimeout(timer);
   }
 
-  const playAlarmOneByOne = (soundIndex) => {
-    const currentPlayingAlarm = alarmSounds[soundIndex]
-    currentPlayingAlarm.createAsync({
-      uri: currentPlayingAlarm.url
-    })
-    setNextAlarmTimer(currentPlayingAlarm.duration)
+  const playAlarmOneByOne = async (soundIndex) => {
+    
+    const { sound } = await Audio.Sound.createAsync({ uri: alarmSounds[soundIndex].url });
+    sound.playAsync();
+    setNextAlarmTimer(alarmSounds[soundIndex].duration)
     
   }
 
@@ -245,8 +244,8 @@ export default function Alarm({
           onPress={() => setRecorderVisible(true)}
         ></Button>
         <Button
-          title="duration"
-          onPress={() => console.log(alarmSounds[0])}
+          title="Play All Sounds"
+          onPress={() => setAlarmSoundIndex(0)}
         ></Button>
         {/* <Button
           title="Play All Messages"
@@ -259,7 +258,7 @@ export default function Alarm({
             return (
               <View>
                 <Pressable style={Appstyles.toggle}>
-                  <Text onPress={() => playSound(item)}>{item.id}</Text>
+                  <Text onPress={() => playSound(item)}>ID: {item.id}: {item.duration}</Text>
                   <Text
                     onPress={() => confirmDelete(alarmId, item.id)}
                     style={{ color: "blue", fontWeight: "bold", marginTop: 40 }}
