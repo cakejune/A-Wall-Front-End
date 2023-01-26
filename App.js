@@ -7,45 +7,34 @@ import {
   FlatList,
   Dimensions,
   View,
-  RefreshControl,
-  ScrollView
+  ScrollView,
 } from "react-native";
+import Home from "./components/Home";
 import LoginScreen from "react-native-login-screen";
 import { useState, useEffect, useCallback } from "react";
 import { HOST_WITH_PORT } from "./environment";
 import LoginPage from "./components/LoginPage";
-import Alarm from "./components/Alarm";
 import { Audio } from "expo-av";
-import Appstyles from './App.scss'
+import Appstyles from "./App.scss";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 // import { ScrollView } from "react-native-web";
+import About from "./components/About";
+import Menu from "./components/Menu";
+import Header from "./components/Header";
+import UserProfile from "./components/UserProfile";
 
 const screen = Dimensions.get("window");
 
-export default function App() { 
+export default function App() {
   const [user, setUser] = useState("");
   const [errors, setErrors] = useState([]);
   const [fakeUser, setFakeUser] = useState(null);
-  const jakeAlarms = user?.alarms;
-  const [testSound, setTestSound] = useState();
-  const [refreshing, setRefreshing] = useState(false);
   
-
-  function refreshAlarms(){
-    setFakeUser(fakeUser);
-    setRefreshing(true);
-    onRefresh();
-    
-  }
-
-  const onRefresh = useCallback(async () => {
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
 
   useEffect(() => {
     //auto-login
-    fetch(`${HOST_WITH_PORT}/jake`, {mode: 'no-cors'}).then((r) => {
+    fetch(`${HOST_WITH_PORT}/jake`, { mode: "no-cors" }).then((r) => {
       if (r.ok) {
         r.json().then((jake) => {
           setUser(jake);
@@ -54,70 +43,76 @@ export default function App() {
     });
   }, [fakeUser]);
 
-  useEffect(() => {
-    return testSound
-      ? () => {
-          console.log("Unloading Sound");
-          testSound.unloadAsync();
-        }
-      : undefined;
-  }, [testSound]);
-
-  async function playTestSound(){
-    const arcade = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/arcade.wav");
-    const { sound } = await Audio.Sound.createAsync(arcade);
-    setTestSound(sound);
-    console.log("Playing Sound");
-    await sound.playAsync();
-    console.log(sound);
-  }
+  const Stack = createNativeStackNavigator();
+  
 
   return (
-    <SafeAreaView styles={styles} height={screen.height}>
-      
-      {user ? (
-        <>
-          <Text style={styles.title}>Welcome, {user.username}</Text>
+    <>
+    <NavigationContainer>
+        <Header styles={styles} user={user} onLogout={()=>setUser(null)}/>
+        <View
+          style={styles.lineStyle}
+        ></View>
+      <Stack.Navigator initialRouteName="Home">
+        {/*Home Screen below*/}
+        <Stack.Screen
+        name="Home"
+        options={{
+          headerShown: false,
+        }}>
+          {() => user ? 
+          <Home onLogout={()=>setUser(null)} styles={styles} user={user} fakeUser={fakeUser}/> 
+          : <LoginPage onLogin={setFakeUser} styles={styles} user={user}/>}
+        </Stack.Screen>
+        {/* Notification Screen */}
+        <Stack.Group
+        screenOptions={{headerStyle: {
+        backgroundColor: '#F0EAD6'}}}>
+        <Stack.Screen name="About" component={About}
+        options={{
+          headerTitleStyle: {
+            fontSize: 25,
+            
           
-          <FlatList
-            data={jakeAlarms}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            renderItem={({ item, index }) => {
-              
-              return (
-                <Alarm
-                  styles={styles}
-                  title={item.name}
-                  time={item.just_time}
-                  alarmTime={item.alarm_time}
-                  alarmId={item.id}
-                  playTestSound={playTestSound}
-                  sounds={item.audio_files}
-                  refreshAlarms={refreshAlarms}
-                />
-                
-            )}
-          }
-            keyExtractor={(item) => item.id}
-          />
-          {/* <Pressable onPress={playTestSound} style={styles.container}>
-            <Text>Play Test Sound</Text>
-          </Pressable> */}
-          <Button title="Log Out" onPress={() => setUser(null)}></Button>
-        </>
-      ) : (
-        <LoginPage onLogin={setFakeUser} styles={styles} user={user} />
-      )}
-    </SafeAreaView>
+          },
+          headerTitle: "About",
+          headerTitleAlign: "left",
+        }}/>
+        <Stack.Screen name="UserProfile" user={user} component={UserProfile}
+        options={{
+          
+          headerTitleStyle: {
+            fontSize: 15,
+          },
+          headerTitle: "Profile",
+          headerTitleAlign: "left",
+        }}
+        />
+        </Stack.Group>
+      </Stack.Navigator>
+    <View styles={{flexDirection: "column"}}>
+        <View style={styles.lineStyle}></View>
+        <Menu styles={styles} onLogout={()=>setUser(null)}/>
+        <View
+          style={[
+            styles.lineStyle,
+            {
+              marginVertical: 40,
+            },
+          ]}
+        ></View>
+      </View>
+    </NavigationContainer>
+    
+    
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   alarm: {
-    backgroundColor: '#470061',
-    borderRadius: 20
+    backgroundColor: "#F0EAD6",
+    borderRadius: 20,
   },
   input: {
     height: 40,
@@ -126,14 +121,14 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   item: {
-    backgroundColor: "#7d22fd",
+    backgroundColor: "#F0EAD6",
     padding: 10,
-    backgroundColor: `#33096f`,
     marginVertical: 8,
     marginHorizontal: 16,
   },
   title: {
     fontSize: 32,
+    color: "#313639",
   },
   time: {
     fontSize: 20,
@@ -145,13 +140,42 @@ const styles = StyleSheet.create({
   },
   buttonOpen: {
     backgroundColor: "#F194FF",
-    borderRadius: 20
+    borderRadius: 20,
   },
   buttonClose: {
     backgroundColor: "#2196F3",
   },
+  lineStyle: {
+    marginBottom: 0,
+    borderWidth: 0.8,
+    borderColor: "grey",
+  },
+  menuContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  headerContainer:{
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    marginTop: 80,
+    marginLeft: 10,
+    alignItems: "flex-start",
+    backgroundColor: "#F0EAD6"
+  },
+  headerIcons: {
+
+  },
+  headerThumbnail: {
+
+  },
+  menuTextStyle:
+  {
+    textTransform: "uppercase",
+  },
   textStyle: {
-    color: "black",
+    color: "#313639",
     fontWeight: "bold",
     textAlign: "center",
   },
@@ -159,11 +183,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
+    marginTop: 5
   },
   modalView: {
     margin: 20,
-    backgroundColor: "white",
+    backgroundColor: "#F0EAD6",
     borderRadius: 20,
     padding: 35,
     alignItems: "center",
@@ -189,9 +213,21 @@ const styles = StyleSheet.create({
     borderRadius: screen.width / 2,
     alignItems: "center",
     justifyContent: "center",
-
   },
   global: {
-    backgroundColor: `rgba(0,0,255,0.2)`
-  }
+    backgroundColor: `rgba(0,0,255,0.2)`,
+  },
+  header: {
+    justifyContent: 'center',
+    alignItems: 'center',      
+    left: 0,
+    right: 0,
+    paddingTop: 10         
+  },
+  headerText: {
+    color: '#fff',
+    fontSize: 25,
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
 });

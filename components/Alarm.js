@@ -6,23 +6,22 @@ import {
   A_WALL_USER_2_ACCESS_KEY_ID,
   A_WALL_2_SECRET_ACCESS_KEY,
 } from "../environment";
-import { Text, View, Pressable, Button, FlatList, Alert } from "react-native";
+import { Text, View, Pressable, Button, FlatList, Alert, TouchableOpacity } from "react-native";
 import RecorderModal from "./RecorderModal";
 import Appstyles from "../App.scss";
-import { setStatusBarBackgroundColor } from "expo-status-bar";
-import { Audio, Playback } from "expo-av";
+import { Audio } from "expo-av";
 // import RNFetchBlob from "react-native-fetch-blob";
 
 export default function Alarm({
-  playTestSound,
   alarmTime,
   alarmId,
   title,
   time,
   styles,
   sounds,
-  refreshAlarms,
-}) {
+}) 
+
+{
   const [show, setShow] = useState(false);
   const [recorderVisible, setRecorderVisible] = useState(false);
   const handleCloseRecorder = () => setRecorderVisible(false);
@@ -34,6 +33,7 @@ export default function Alarm({
   const [currentSound, setCurrentSound] = useState();
   const [alarmSounds, setAlarmSounds] = useState(sounds);
   const [alarmSoundIndex, setAlarmSoundIndex] = useState(null);
+  const [showSounds, setShowSounds] = useState(false);
 
   function alertAndClose() {
     Alert.alert("Submitted", "Your recording has been submitted", [
@@ -41,7 +41,6 @@ export default function Alarm({
         text: "OK",
         onPress: () => {
           handleCloseRecorder();
-          refreshAlarms();
         },
         style: "cancel",
       },
@@ -63,7 +62,7 @@ export default function Alarm({
   useEffect(() => {
     if (minutesTilAlarm) {
       const timer = setTimeout(() => {
-        playAlarms(alarmSounds);
+        setAlarmSoundIndex(0);
       }, minutesTilAlarm * 60 * 1000);
       return () => clearTimeout(timer);
     }
@@ -97,7 +96,7 @@ export default function Alarm({
   const setNextAlarmTimer = (timer) => {
     setTimeout(()=> {
       setAlarmSoundIndex(alarmSoundIndex+1)
-    }, timer)
+    }, timer+500)
     return () => clearTimeout(timer);
   }
 
@@ -141,38 +140,6 @@ export default function Alarm({
         });
       }
     });
-  }
-
-
-
-  async function playAlarms(allSounds) {
-   let i = 0;
-    while (i < allSounds.length) {
-      const { sound } = await Audio.Sound.createAsync({
-        uri: allSounds[i].url,
-      });
-      //initiate a timeout that has a length of allsounds[i].duration, and when
-      //duration is up, play allsounds[i+1], and set the timeout to allsounds[i+1].duration
-      //
-      sound.playAsync();
-      currentSound.unloadAsync();
-      Alert.alert(`${title}`, "Playing Sounds", [
-        {
-          text: "Stop Sounds",
-          onPress: () => {
-            currentSound.unloadAsync();
-          },
-          style: "cancel",
-        },
-        {
-          text: "Continue Listening",
-          onPress: () => {
-            refreshAlarms();
-          },
-          style: "cancel",
-        },
-      ]);
-    }
   }
 
   async function playSound(audio_file) {
@@ -233,7 +200,7 @@ export default function Alarm({
   return (
     <>
       <View style={Appstyles.container}>
-        <Pressable style={[styles.buttonOpen]} onPress={() => setShow(true)}>
+        <Pressable style={{borderRadius: 10, backgroundColor: '#2196F35a'}} onPress={() => setShow(true)}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.textStyle}>
             {newJustTime} (edit). Time til alarm: {minutesTilAlarm} minutes
@@ -243,15 +210,16 @@ export default function Alarm({
           title="Record a Message"
           onPress={() => setRecorderVisible(true)}
         ></Button>
-        <Button
+        {/* <Button
           title="Play All Sounds"
           onPress={() => setAlarmSoundIndex(0)}
-        ></Button>
-        {/* <Button
-          title="Play All Messages"
-          onPress={() => startAlarmChain}
         ></Button> */}
-        
+        <Button
+        title={showSounds ? "Hide Sounds" : "View Messages"}
+        onPress={()=> setShowSounds(!showSounds)}>
+
+        </Button>
+      <View style={showSounds ? {display: 'block'} : {display: 'none'}}>
         <FlatList
           data={alarmSounds}
           renderItem={({ item, index }) => {
@@ -271,6 +239,7 @@ export default function Alarm({
           }}
           keyExtractor={(item) => item.id}
         />
+        </View>
       </View>
       <EditTime
         show={show}

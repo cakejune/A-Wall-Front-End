@@ -3,7 +3,7 @@
   flex: 1;
   justify-content: center;
   align-items: center;
-  background-color: rgb(135, 17, 17);
+  background-color: #F0EAD6
 }
 $size: 140px;
 $radius: $size * 0.845;
@@ -19,3 +19,9 @@ $glow: $size * 0.125;
   width: $size;
   align-items: center;
 }
+
+.menuContainer{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }

@@ -85,6 +85,8 @@ export default function EditTime({
                 onChange={onChange}
                 display="spinner"
                 neutralButton={{ label: "Clear", textColor: "grey" }}
+                textColor="black"
+                
               />
             <Button title="cancel" onPress={handleClose}></Button>
           </View>
