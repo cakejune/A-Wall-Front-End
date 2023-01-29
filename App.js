@@ -49,10 +49,7 @@ export default function App() {
   return (
     <>
     <NavigationContainer>
-        <Header styles={styles} user={user} onLogout={()=>setUser(null)}/>
-        <View
-          style={styles.lineStyle}
-        ></View>
+        
       <Stack.Navigator initialRouteName="Home">
         {/*Home Screen below*/}
         <Stack.Screen
@@ -90,18 +87,7 @@ export default function App() {
         />
         </Stack.Group>
       </Stack.Navigator>
-    <View styles={{flexDirection: "column"}}>
-        <View style={styles.lineStyle}></View>
-        <Menu styles={styles} onLogout={()=>setUser(null)}/>
-        <View
-          style={[
-            styles.lineStyle,
-            {
-              marginVertical: 40,
-            },
-          ]}
-        ></View>
-      </View>
+   
     </NavigationContainer>
     
     
@@ -110,6 +96,10 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#F0EAD6",
+  },
   alarm: {
     backgroundColor: "#F0EAD6",
     borderRadius: 20,
@@ -126,9 +116,13 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     marginHorizontal: 16,
   },
-  title: {
-    fontSize: 32,
+  alarmTime: {
+    fontSize: 40,
     color: "#313639",
+    textAlign: 'center',
+    paddingBottom: 5,
+    marginLeft: 20
+
   },
   time: {
     fontSize: 20,
@@ -154,15 +148,17 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     justifyContent: "space-around",
+    backgroundColor: "#F0EAD6"
   },
   headerContainer:{
     display: "flex",
+    position: "fixed",
     flexDirection: "row",
     justifyContent: "flex-start",
-    marginTop: 80,
-    marginLeft: 10,
+    paddingTop: 30,
     alignItems: "flex-start",
-    backgroundColor: "#F0EAD6"
+    backgroundColor: "#f0ead68f"
+    
   },
   headerIcons: {
 
@@ -178,6 +174,8 @@ const styles = StyleSheet.create({
     color: "#313639",
     fontWeight: "bold",
     textAlign: "center",
+    marginLeft: 20
+
   },
   centeredView: {
     flex: 1,
@@ -214,8 +212,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  global: {
+  addAlarmButton:{
+    borderWidth: 2,
+    borderColor: "#00ddff",
     backgroundColor: `rgba(0,0,255,0.2)`,
+    width: screen.width / 8,
+    height: screen.width / 8,
+    borderRadius: screen.width / 2,
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 2,
+  },
+  global: {
+    backgroundColor: `#F0EAD6`,
   },
   header: {
     justifyContent: 'center',

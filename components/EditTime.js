@@ -14,9 +14,11 @@ export default function EditTime({
   title,
   handleClose,
   show,
+  minutesTilAlarm
 }) {
   const [date, setDate] = useState(new Date(alarmTime));
   const [mode, setMode] = useState("time");
+  const timeUntilAlarm = minutesTilAlarm
   //   const [show, setShow] = useState(false);
 
   const onChange = (event, selectedDate) => {
@@ -55,6 +57,7 @@ export default function EditTime({
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Button title="confirm" onPress={handleSubmitTime}></Button>
+            <Text>Time Until Alarm: {minutesTilAlarm} minutes</Text>
             {/* {Platform.OS === "android" ? (
               <RNDateTimePicker
                 testID="dateTimePickerAndroid"

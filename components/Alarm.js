@@ -6,11 +6,22 @@ import {
   A_WALL_USER_2_ACCESS_KEY_ID,
   A_WALL_2_SECRET_ACCESS_KEY,
 } from "../environment";
-import { Text, View, Pressable, Button, FlatList, Alert, TouchableOpacity } from "react-native";
+import {
+  Text,
+  View,
+  Pressable,
+  Button,
+  FlatList,
+  Alert,
+  TouchableOpacity,
+  Image,
+  TouchableHighlight,
+} from "react-native";
 import RecorderModal from "./RecorderModal";
 import Appstyles from "../App.scss";
 import { Audio } from "expo-av";
 // import RNFetchBlob from "react-native-fetch-blob";
+import AlarmMessages from "./AlarmMessages";
 
 export default function Alarm({
   alarmTime,
@@ -19,9 +30,8 @@ export default function Alarm({
   time,
   styles,
   sounds,
-}) 
-
-{
+  userId,
+}) {
   const [show, setShow] = useState(false);
   const [recorderVisible, setRecorderVisible] = useState(false);
   const handleCloseRecorder = () => setRecorderVisible(false);
@@ -34,6 +44,9 @@ export default function Alarm({
   const [alarmSounds, setAlarmSounds] = useState(sounds);
   const [alarmSoundIndex, setAlarmSoundIndex] = useState(null);
   const [showSounds, setShowSounds] = useState(false);
+  const [messagesVisible, setMessagesVisible] = useState(false);
+  const recordIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/118789_media_record_icon.png");
+  const messagesIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/134220_play_next_icon.png");
 
   function alertAndClose() {
     Alert.alert("Submitted", "Your recording has been submitted", [
@@ -79,34 +92,32 @@ export default function Alarm({
     setMinutesTilAlarm(calculateTimeout(timeInMinutes, alarmInMinutes));
   }, [newAlarmTime]);
 
-  async function startAlarmChain(){
-  setAlarmSoundIndex(0)
+  async function startAlarmChain() {
+    setAlarmSoundIndex(0);
   }
 
-  useEffect(()=>{
-    if (alarmSoundIndex !== null && alarmSounds[alarmSoundIndex])
-    {
-      playAlarmOneByOne(alarmSoundIndex)
+  useEffect(() => {
+    if (alarmSoundIndex !== null && alarmSounds[alarmSoundIndex]) {
+      playAlarmOneByOne(alarmSoundIndex);
+    } else {
+      console.log("nothing");
     }
-    else{
-      console.log('nothing')
-    }
-  },[alarmSoundIndex])
-  
+  }, [alarmSoundIndex]);
+
   const setNextAlarmTimer = (timer) => {
-    setTimeout(()=> {
-      setAlarmSoundIndex(alarmSoundIndex+1)
-    }, timer+500)
+    setTimeout(() => {
+      setAlarmSoundIndex(alarmSoundIndex + 1);
+    }, timer + 500);
     return () => clearTimeout(timer);
-  }
+  };
 
   const playAlarmOneByOne = async (soundIndex) => {
-    
-    const { sound } = await Audio.Sound.createAsync({ uri: alarmSounds[soundIndex].url });
+    const { sound } = await Audio.Sound.createAsync({
+      uri: alarmSounds[soundIndex].url,
+    });
     sound.playAsync();
-    setNextAlarmTimer(alarmSounds[soundIndex].duration)
-    
-  }
+    setNextAlarmTimer(alarmSounds[soundIndex].duration);
+  };
 
   const calculateTimeout = (currentTime, alarmTime) => {
     let delta = alarmTime - currentTime;
@@ -116,6 +127,7 @@ export default function Alarm({
       return 1440 + delta;
     }
   };
+
   function submitTime(newTime) {
     fetch(`${HOST_WITH_PORT}/alarms/${alarmId}`, {
       method: "PATCH",
@@ -153,26 +165,21 @@ export default function Alarm({
   }
 
   function confirmDelete(alarmId, audioId) {
-    Alert.alert(
-      "",
-      "Are you sure you want to delete this recording?",
-      [
-        {
-          text: "confirm",
-          onPress: () => {
-            deleteAudio(alarmId, audioId);
-          },
-          style: "cancel",
+    Alert.alert("", "Are you sure you want to delete this recording?", [
+      {
+        text: "confirm",
+        onPress: () => {
+          deleteAudio(alarmId, audioId);
         },
-        {
-          text: "cancel",
-          onPress: () => {
-            console.log('deletion cancelled.')
-          },
-
-        }
-      ],
-    );
+        style: "cancel",
+      },
+      {
+        text: "cancel",
+        onPress: () => {
+          console.log("deletion cancelled.");
+        },
+      },
+    ]);
   }
 
   function deleteAudio(alarmId, audioId) {
@@ -200,26 +207,88 @@ export default function Alarm({
   return (
     <>
       <View style={Appstyles.container}>
-        <Pressable style={{borderRadius: 10, backgroundColor: '#2196F35a'}} onPress={() => setShow(true)}>
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.textStyle}>
-            {newJustTime} (edit). Time til alarm: {minutesTilAlarm} minutes
-          </Text>
+        
+        <Pressable
+          style={{
+            backgroundColor: "#2196F35a",
+            borderWidth: 1,
+            display: "flex",
+            flexDirection: "row",
+            flexWrap: "wrap",
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              width: "100%",
+              justifyContent: "space-between",
+            }}
+          >
+            <TouchableOpacity onPress={() => setShow(true)}>
+              <Text style={styles.alarmTime}>{newJustTime}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{ justifyContent: "center", marginRight: 20 }}
+              onPress={() => setRecorderVisible(true)}
+            >
+              <Image
+                style={{
+                  width: 32,
+                  height: 32,
+                  marginBottom: 20,
+                  opacity: 0.8,
+                  borderRadius: 0,
+                }}
+                source={recordIcon}
+              />
+            </TouchableOpacity>
+          </View>
+
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
+            <Text style={styles.textStyle}>Alarm Title: {title}</Text>
+            <TouchableOpacity
+              style={{ justifyContent: "center", marginRight: 20 }}
+              onPress={() => setShowSounds(true)}
+            >
+              <Image
+                style={{
+                  width: 23,
+                  height: 23,
+                  marginBottom: 20,
+                  opacity: 0.8,
+                  borderRadius: 0,
+                }}
+                source={messagesIcon}
+              />
+            </TouchableOpacity>
+          </View>
+          <View style={{width: '100%'}}>
+                <Button
+                title={messagesVisible ? "v" : ">"}
+                onPress={()=>setMessagesVisible(!messagesVisible)}/>
+          </View>
         </Pressable>
-        <Button
-          title="Record a Message"
-          onPress={() => setRecorderVisible(true)}
-        ></Button>
+
         {/* <Button
           title="Play All Sounds"
           onPress={() => setAlarmSoundIndex(0)}
         ></Button> */}
-        <Button
+        {/* <Button
         title={showSounds ? "Hide Sounds" : "View Messages"}
         onPress={()=> setShowSounds(!showSounds)}>
 
-        </Button>
-      <View style={showSounds ? {display: 'block'} : {display: 'none'}}>
+        </Button> */}
+        {/* <View style={showSounds ? {display: 'block'} : {display: 'none'}}>
         <FlatList
           data={alarmSounds}
           renderItem={({ item, index }) => {
@@ -239,8 +308,10 @@ export default function Alarm({
           }}
           keyExtractor={(item) => item.id}
         />
-        </View>
+        </View> */}
       </View>
+
+      {/* modals */}
       <EditTime
         show={show}
         handleClose={handleClose}
@@ -250,6 +321,7 @@ export default function Alarm({
         alarmId={alarmId}
         alarmTime={alarmTime}
         submitTime={submitTime}
+        minutesTilAlarm={minutesTilAlarm}
       />
       <RecorderModal
         show={recorderVisible}
@@ -259,6 +331,15 @@ export default function Alarm({
         alarmId={alarmId}
         alarmTime={alarmTime}
         alertAndClose={alertAndClose}
+      />
+      <AlarmMessages
+        alarmSounds={alarmSounds}
+        show={showSounds}
+        handleClose={() => setShowSounds(false)}
+        confirmDelete={confirmDelete}
+        styles={styles}
+        playSound={playSound}
+        alarmId={alarmId}
       />
     </>
   );

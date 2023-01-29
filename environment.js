@@ -1,5 +1,5 @@
 // environment.js
-const HOST = '4ca3-71-190-177-64.ngrok.io'
+const HOST = 'd32c-184-153-40-255.ngrok.io'
 const A_WALL_USER_2_ACCESS_KEY_ID = 'AKIAVF2C3PGAGL23IXPH'
 const A_WALL_2_SECRET_ACCESS_KEY = '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'
 

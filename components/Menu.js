@@ -1,22 +1,23 @@
 import { useNavigation } from "@react-navigation/native";
 import React from "react";
-import { TouchableOpacity, View, Text, Image } from "react-native";
+import { TouchableOpacity, View, Text, Image, SafeAreaView } from "react-native";
 
 const Menu = ({ styles, onLogout }) => {
   const navigation = useNavigation();
-  const friendsIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/components/Header.js");
+  const friendsIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/friends.png");
   const homeIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/home-icon.png");
+  const logoutIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/9104226_room_door_exit_entrance_hotel_icon.png")
 
   return (
-    <View style={styles.menuContainer}>
+    <SafeAreaView style={styles.menuContainer}>
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("About")}
       >
         <Image
           style={{
-            width: 25,
-            height: 25,
+            width: 30,
+            height: 30,
             marginBottom: 20,
             opacity: 0.8,
             borderRadius: 0,
@@ -26,7 +27,16 @@ const Menu = ({ styles, onLogout }) => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.button} onPress={onLogout}>
-        <Text>Log Out</Text>
+      <Image
+          style={{
+            width: 32,
+            height: 32,
+            marginBottom: 20,
+            opacity: 0.8,
+            borderRadius: 0,
+          }}
+          source={logoutIcon}
+        />
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -44,7 +54,7 @@ const Menu = ({ styles, onLogout }) => {
           source={homeIcon}
         />
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
