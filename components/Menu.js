@@ -2,7 +2,7 @@ import { useNavigation } from "@react-navigation/native";
 import React from "react";
 import { TouchableOpacity, View, Text, Image, SafeAreaView } from "react-native";
 
-const Menu = ({ styles, onLogout }) => {
+const Menu = ({ styles, onLogout, user }) => {
   const navigation = useNavigation();
   const friendsIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/friends.png");
   const homeIcon = require("/home/cakejune/Development/code/phase-5/active-storage-test/aWallExpo/assets/home-icon.png");
@@ -12,7 +12,7 @@ const Menu = ({ styles, onLogout }) => {
     <SafeAreaView style={styles.menuContainer}>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("About")}
+        onPress={() => navigation.navigate('Friends', {user: user})}
       >
         <Image
           style={{

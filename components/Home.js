@@ -8,19 +8,47 @@ import {
   Dimensions,
   View,
   ScrollView,
-  TouchableHighlight
+  TouchableHighlight,
+  TouchableOpacity
 } from "react-native";
 import Alarm from "./Alarm";
 import Menu from "./Menu";
 import Header from "./Header";
 import AddAlarmModal from "./AddAlarmModal";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { HOST_WITH_PORT } from "../environment";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home({ styles, user, fakeUser, onLogout }) {
-  let jakeAlarms = user?.alarms;
+  // const jsonUser = JSON.parse(user);
+  let jakeAlarms = userAlarms
   const handleClose = () => setShowAdd(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [homeUser, setHomeUser] = useState(user)
+  const [errors, setErrors] = useState("")
+  const [userAlarms, setUserAlarms] = useState([])
+  const [refreshAlarms, setRefreshAlarms] = useState(false)
+  const [showRemoveAlarms, setShowRemoveAlarms] = useState(false)
+
+  useEffect(()=>{
+      AsyncStorage.getItem('user').then((user) => {
+          setHomeUser(user)
+          console.log(homeUser)
+          fetchUserAlarms();
+      });
+  },[refreshAlarms])
+
+  function fetchUserAlarms(){
+    fetch(`${HOST_WITH_PORT}/users/${user.id}/alarms`).then((res)=>{
+      if(res.ok){
+        res.json().then((userAlarms)=>setUserAlarms(userAlarms))
+        console.log(userAlarms)
+      }
+      else{
+        res.json().then((err)=>setErrors(err.error))
+      }
+    })
+  }
 
   function addNewAlarm(newAlarm_Time, newAlarm_Name, newAlarm_Owner){
     fetch(`${HOST_WITH_PORT}/alarms`,
@@ -38,8 +66,7 @@ export default function Home({ styles, user, fakeUser, onLogout }) {
     .then((res)=> {
       if (res.ok) {
         res.json().then((newAlarm)=>{
-          console.log(newAlarm)
-          jakeAlarms.push(newAlarm)
+          setRefreshAlarms(!refreshAlarms)
         })
       }
       else{
@@ -53,14 +80,17 @@ export default function Home({ styles, user, fakeUser, onLogout }) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={{position: 'sticky'}}>
-        <Header styles={styles} user={user}/>
+        <Header styles={styles} user={homeUser}/>
         <View
           style={styles.lineStyle}
           ></View>
           </View>
-          <Text>Alarms</Text>
+          <View style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-between', height: '5%', alignItems: 'center'}}>
+          <Text>{userAlarms.length>0 ? `Alarms: ${userAlarms.length}` : errors} User-Id: {user.id}</Text>
+          <TouchableOpacity onPress={()=>setShowRemoveAlarms(!showRemoveAlarms)}><Text> edit </Text></TouchableOpacity>
+          </View>
         <FlatList
-          data={jakeAlarms}
+          data={userAlarms}
           renderItem={({ item, index }) => {
             return (
               <Alarm
@@ -71,6 +101,7 @@ export default function Home({ styles, user, fakeUser, onLogout }) {
                 alarmId={item.id}
                 sounds={item.audio_files}
                 userId={user.id}
+                showRemoveAlarms={showRemoveAlarms}
               />
             );
           }}
@@ -94,7 +125,7 @@ export default function Home({ styles, user, fakeUser, onLogout }) {
      
         <View styles={{flexDirection: "row"}}>
         <View style={styles.lineStyle}></View>
-        <Menu styles={styles} onLogout={onLogout}/>
+        <Menu styles={styles} onLogout={onLogout} user={homeUser}/>
         
       </View>
     </SafeAreaView>

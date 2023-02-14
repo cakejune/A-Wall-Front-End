@@ -1,6 +1,6 @@
 {
   "name": "awallexpo",
-  "proxy": "d32c-184-153-40-255.ngrok.io",
+  "proxy": "6dcf-71-190-177-64.ngrok.io",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@expo/webpack-config": "^0.17.2",
+    "@react-native-async-storage/async-storage": "^1.17.11",
     "@react-native-community/cli-debugger-ui": "^10.0.0",
     "@react-native-community/datetimepicker": "^6.7.3",
     "@react-navigation/native": "^6.1.2",

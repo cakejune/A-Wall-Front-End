@@ -6,58 +6,69 @@ import {
   Image,
   SafeAreaView,
   TextInput,
-  Button
+  Button,
+  Pressable,
+  Modal,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { HOST_WITH_PORT } from "../environment";
 
-export default function LoginPage({onLogin, styles}){
-
-    const [username, setUsername] = useState("");
+export default function LoginPage({
+  onLogin,
+  styles,
+  onRealLogin,
+  onSignup,
+  onHandleClearCache,
+  errors
+}) {
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState([]);
+  const [signupUsername, setSignupUsername] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [signupPasswordConfirmation, setSignupPasswordConfirmation] =
+    useState("");
 
-  function onSubmit(e){
-    fetch(`${HOST_WITH_PORT}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ username, password }),
-    }).then((res)=>
-    {
-      
-      if(res.ok)
-      {res.json().then((user)=>
-        {
-          onLogin(user)
-          alert(`Welcome, ${user.username}!`)
-        }
-      )  
-        }
-        else
-      {res.json().then((err)=>{alert(`${err.errors}`)})
-    }
-    })
+  const [show, setShow] = useState(false);
+  const [item, setItem] = useState("");
+  const showSignup = () => setShow(true);
+  const handleClose = () => {
+    setShow(false);
+    setSignupUsername("");
+    setSignupPassword("");
+    setSignupPasswordConfirmation("");
+  };
+
+  function onHandleSubmitLogin(e) {
+    onLogin(username, password);
   }
 
-  function showAlarmsTest()
-  {
-    fetch(`${HOST_WITH_PORT}/alarms`).then((res)=>res.json()).then((alarms)=>(alert(`${alarms[0].just_time}`)))
+  function onHandleSignup(e) {
+    onSignup(signupUsername, signupPassword, signupPasswordConfirmation);
   }
 
-useEffect(()=>{
-setUsername("")
-setPassword("")
-}, [])
+  function onHandleClearCache(e){
+    onLogout()
+  }
 
-return (
-    <View>
-    <Text>Login</Text>
-    <SafeAreaView>
-        <TextInput
-          style={styles.input}
-          onChangeText={(e) => {
+  function showAlarmsTest() {
+    fetch(`${HOST_WITH_PORT}/alarms`)
+      .then((res) => res.json())
+      .then((alarms) => alert(`${alarms[0].just_time}`));
+  }
+
+  useEffect(() => {
+    setUsername("");
+    setPassword("");
+  }, []);
+
+  return (
+    <>
+      <View>
+        <SafeAreaView>
+          <Text>Login Page</Text>
+          <TextInput
+            style={styles.input}
+            onChangeText={(e) => {
               setUsername(e);
               console.log(username);
             }}
@@ -65,22 +76,67 @@ return (
             placeholder="username"
             autoCapitalize="none"
             autoComplete="off"
-            />
-        <TextInput
-          style={styles.input}
-          onChangeText={(e) => setPassword(e)}
-          value={password}
-          placeholder="password"
-          autoCapitalize="none"
-          autoComplete="off"
           />
-        <Button
-        title="Press me"
-        onPress={() => onSubmit()}
-        />
-      </SafeAreaView>
-      <StatusBar style="auto" />
+          <TextInput
+            style={styles.input}
+            onChangeText={(e) => setPassword(e)}
+            value={password}
+            placeholder="password"
+            autoCapitalize="none"
+            autoComplete="off"
+            secureTextEntry="true"
+          />
+          <Text style={{color: "red", alignSelf: 'center'}}>{errors ? errors : ""}</Text>
+          <Button title="Log In" onPress={() => onHandleSubmitLogin()} />
+          <Button title="Clear Cache" onPress={() => onHandleSubmitLogin()} />
+        </SafeAreaView>
       </View>
-      )
-    }
 
+      <View style={styles.centeredView}>
+        <Text>Don't have an account?</Text>
+        <Button title="Sign up now" onPress={showSignup} />
+        <Modal animationType="slide" transparent={true} visible={show}>
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Button title="x" onPress={handleClose} />
+
+              <TextInput
+                style={styles.input}
+                onChangeText={(e) => {
+                  setSignupUsername(e);
+                }}
+                value={signupUsername}
+                placeholder="username"
+                autoCapitalize="none"
+                autoComplete="off"
+                placeholderTextColor="#00000056"
+              />
+
+              <TextInput
+                style={styles.input}
+                onChangeText={(e) => setSignupPassword(e)}
+                value={signupPassword}
+                placeholder="password"
+                autoCapitalize="none"
+                autoComplete="off"
+                secureTextEntry="true"
+                placeholderTextColor="#00000056"
+              />
+              <TextInput
+                style={styles.input}
+                onChangeText={(e) => setSignupPasswordConfirmation(e)}
+                value={signupPasswordConfirmation}
+                placeholder="password confirmation"
+                autoCapitalize="none"
+                autoComplete="off"
+                secureTextEntry="true"
+                placeholderTextColor="#00000056"
+              />
+              <Button title="Signup" onPress={() => onHandleSignup()} />
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </>
+  );
+}

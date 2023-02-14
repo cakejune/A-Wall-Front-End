@@ -31,6 +31,7 @@ export default function Alarm({
   styles,
   sounds,
   userId,
+  showRemoveAlarms
 }) {
   const [show, setShow] = useState(false);
   const [recorderVisible, setRecorderVisible] = useState(false);
@@ -59,9 +60,6 @@ export default function Alarm({
       },
     ]);
   }
-  useEffect(() => {
-    console.log("updated alarm sounds flatlist");
-  }, [alarmSounds]);
 
   useEffect(() => {
     return currentSound
@@ -100,7 +98,7 @@ export default function Alarm({
     if (alarmSoundIndex !== null && alarmSounds[alarmSoundIndex]) {
       playAlarmOneByOne(alarmSoundIndex);
     } else {
-      console.log("nothing");
+      console.log("no alarms will play just yet");
     }
   }, [alarmSoundIndex]);
 
@@ -225,9 +223,14 @@ export default function Alarm({
               justifyContent: "space-between",
             }}
           >
+            <View style={{display:'flex', flexDirection: 'row'}}>
+            <TouchableOpacity>
+              <Text style={styles.removeAlarmButton}> ⊝ </Text>
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => setShow(true)}>
               <Text style={styles.alarmTime}>{newJustTime}</Text>
-            </TouchableOpacity>
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity
               style={{ justifyContent: "center", marginRight: 20 }}
@@ -245,6 +248,7 @@ export default function Alarm({
               />
             </TouchableOpacity>
           </View>
+             
 
           <View
             style={{

@@ -10,8 +10,7 @@ import {
   ScrollView,
 } from "react-native";
 import Home from "./components/Home";
-import LoginScreen from "react-native-login-screen";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { HOST_WITH_PORT } from "./environment";
 import LoginPage from "./components/LoginPage";
 import { Audio } from "expo-av";
@@ -19,10 +18,12 @@ import Appstyles from "./App.scss";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 // import { ScrollView } from "react-native-web";
-import About from "./components/About";
+import Friends from "./components/Friends";
 import Menu from "./components/Menu";
 import Header from "./components/Header";
 import UserProfile from "./components/UserProfile";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+let STORAGE_KEY = 'user';
 
 const screen = Dimensions.get("window");
 
@@ -30,21 +31,112 @@ export default function App() {
   const [user, setUser] = useState("");
   const [errors, setErrors] = useState([]);
   const [fakeUser, setFakeUser] = useState(null);
+  const [input, setInput] = useState('');
+  const [loginErrors, setLoginErrors] = useState([]);
   
 
-  useEffect(() => {
-    //auto-login
-    fetch(`${HOST_WITH_PORT}/jake`, { mode: "no-cors" }).then((r) => {
-      if (r.ok) {
-        r.json().then((jake) => {
-          setUser(jake);
+useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY).then((storedUser) => {
+      if (storedUser) {
+        // Parse the storedUser string to get the actual user object
+        const user = JSON.parse(storedUser);
+        setUser(user);
+      } else {
+        console.log("No user found in storage");
+      }
+    });
+  }, []);
+
+  // useEffect(() => {
+  //   //auto-login
+  //   fetch(`${HOST_WITH_PORT}/jake`, { mode: "no-cors" }).then((r) => {
+  //     if (r.ok) {
+  //       r.json().then((jake) => {
+  //         setUser(jake);
+  //       });
+  //     }
+  //   });
+  // }, [fakeUser]);
+
+  const Stack = createNativeStackNavigator();
+
+  async function checkUserData() {
+    try {
+      const user = await AsyncStorage.getItem('user');
+      console.log(user);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  
+  const onLogout = async () => {
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      setUser(null);
+      setLoginErrors(null);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  function onLogin(username, password){
+    fetch(`${HOST_WITH_PORT}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({user: { 
+        email: username, 
+        password: password
+       }}),
+    }).then((res) => {
+      if (res.ok) {
+        res.json().then((user) => {
+          // Store the user object in AsyncStorage
+          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user.data));
+          // Set the user state to the user object
+          setUser(user.data);
+          alert(`Welcome, ${user.data.email}!`);
+        });
+      } else {
+        res.json().then((err) => {
+          console.log(err.errors);
+          setLoginErrors(err.errors);
         });
       }
     });
-  }, [fakeUser]);
+  }
 
-  const Stack = createNativeStackNavigator();
-  
+  function onSignup(username, password, passwordConfirmation){
+    fetch(`${HOST_WITH_PORT}/signup`,
+    {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      //replaced username with email
+      body: JSON.stringify({user: {
+        email: username, 
+        password: password, 
+        password_confirmation: passwordConfirmation
+      }}),
+    }).then((res)=> {
+      if(res.ok){
+        res.json().then((user)=>{
+          AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(user.data));
+          setUser(user.data);
+          alert(`Welcome, ${user.data.email}`)
+        })
+      } else {
+        res.json().then((err)=>{
+          alert(`${err.errors}`);
+        });
+      }
+      
+    })
+  }
 
   return (
     <>
@@ -58,24 +150,24 @@ export default function App() {
           headerShown: false,
         }}>
           {() => user ? 
-          <Home onLogout={()=>setUser(null)} styles={styles} user={user} fakeUser={fakeUser}/> 
-          : <LoginPage onLogin={setFakeUser} styles={styles} user={user}/>}
+          <Home onLogout={onLogout} styles={styles} user={user} fakeUser={fakeUser}/> 
+          : <LoginPage onLogin={onLogin} onRealLogin={setUser} styles={styles} user={user} onSignup={onSignup} onHandleClearCache={onLogout} errors={loginErrors}/>}
         </Stack.Screen>
         {/* Notification Screen */}
         <Stack.Group
         screenOptions={{headerStyle: {
         backgroundColor: '#F0EAD6'}}}>
-        <Stack.Screen name="About" component={About}
+        <Stack.Screen name="Friends" component={Friends}
         options={{
           headerTitleStyle: {
             fontSize: 25,
             
           
           },
-          headerTitle: "About",
+          headerTitle: "Friends",
           headerTitleAlign: "left",
         }}/>
-        <Stack.Screen name="UserProfile" user={user} component={UserProfile}
+        <Stack.Screen name="UserProfile" component={UserProfile}
         options={{
           
           headerTitleStyle: {
@@ -123,6 +215,14 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     marginLeft: 20
 
+  },
+  removeAlarmButton:{
+    fontSize: 40,
+    color: "red",
+    textAlign: 'center',
+    paddingBottom: 5,
+    marginLeft: 0,
+    marginRight: -10
   },
   time: {
     fontSize: 20,
