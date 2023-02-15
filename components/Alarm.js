@@ -31,7 +31,7 @@ export default function Alarm({
   styles,
   sounds,
   userId,
-  showRemoveAlarms
+  showRemoveAlarms,
 }) {
   const [show, setShow] = useState(false);
   const [recorderVisible, setRecorderVisible] = useState(false);
@@ -161,6 +161,43 @@ export default function Alarm({
 
     console.log(sound);
   }
+  function displayRemoveAlarm() {
+    Alert.alert(
+      "",
+      "Are you sure you want to delete this alarm? All of its messages will be deleted along with it.",
+      [
+        {
+          text: "delete",
+          onPress: () => {
+            deleteAlarm(alarmId)
+            console.log("deleteAlarm function");
+          },
+          style: "cancel",
+        },
+        {
+          text: "cancel",
+          onPress: () => {
+            console.log("deletion cancelled.");
+          },
+        },
+      ]
+    );
+  }
+
+  function deleteAlarm(alarmId) {
+    fetch(`${HOST_WITH_PORT}/alarms/${alarmId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((res) => {
+      if (res.ok) {
+        res.json();
+      } else {
+        res.json((err) => console.log(err));
+      }
+    });
+  }
 
   function confirmDelete(alarmId, audioId) {
     Alert.alert("", "Are you sure you want to delete this recording?", [
@@ -205,7 +242,6 @@ export default function Alarm({
   return (
     <>
       <View style={Appstyles.container}>
-        
         <Pressable
           style={{
             backgroundColor: "#2196F35a",
@@ -223,12 +259,15 @@ export default function Alarm({
               justifyContent: "space-between",
             }}
           >
-            <View style={{display:'flex', flexDirection: 'row'}}>
-            <TouchableOpacity>
-              <Text style={styles.removeAlarmButton}> ⊝ </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShow(true)}>
-              <Text style={styles.alarmTime}>{newJustTime}</Text>
+            <View style={{ display: "flex", flexDirection: "row" }}>
+              <TouchableOpacity
+                style={{ display: showRemoveAlarms ? "" : "none" }}
+                onPress={displayRemoveAlarm}
+              >
+                <Text style={styles.removeAlarmButton}> ⊝ </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShow(true)}>
+                <Text style={styles.alarmTime}>{newJustTime}</Text>
               </TouchableOpacity>
             </View>
 
@@ -248,7 +287,6 @@ export default function Alarm({
               />
             </TouchableOpacity>
           </View>
-             
 
           <View
             style={{
@@ -276,10 +314,11 @@ export default function Alarm({
               />
             </TouchableOpacity>
           </View>
-          <View style={{width: '100%'}}>
-                <Button
-                title={messagesVisible ? "v" : ">"}
-                onPress={()=>setMessagesVisible(!messagesVisible)}/>
+          <View style={{ width: "100%" }}>
+            <Button
+              title={messagesVisible ? "v" : ">"}
+              onPress={() => setMessagesVisible(!messagesVisible)}
+            />
           </View>
         </Pressable>
 
